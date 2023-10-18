@@ -1,17 +1,26 @@
-import { Button, Card, Icon, Image } from "semantic-ui-react";
+import { useEffect } from "react";
+import { observer } from "mobx-react-lite";
+import { useParams } from "react-router-dom";
+import { Button, Card, Image } from "semantic-ui-react";
+
 import { useStore } from "../../../app/stores/store";
 import LoadingComponent from "../../../app/layout/LoadingComponent";
+
+import { Link } from "react-router-dom";
 
 const ActivityDetails = () => {
   const { activityStore } = useStore();
 
-  const {
-    selectedActivity: activity,
-    openForm,
-    cancelSelectedActivity: cancelActivity,
-  } = activityStore;
+  // prettier-ignore
+  const { selectedActivity: activity, loadActivity, loadingInitial} = activityStore;
 
-  if (!activity) return <LoadingComponent />;
+  const { id } = useParams();
+
+  useEffect(() => {
+    if (id) loadActivity(id);
+  }, [id, loadActivity]);
+
+  if (loadingInitial || !activity) return <LoadingComponent />;
 
   return (
     <Card fluid>
@@ -26,16 +35,18 @@ const ActivityDetails = () => {
       <Card.Content extra>
         <Button.Group widths="2">
           <Button
+            as={Link}
+            to={`/manage/${activity.id}`}
             basic
             color="blue"
             content="Edit"
-            onClick={() => openForm(activity.id)}
           />
           <Button
+            as={Link}
+            to={"/activities"}
             basic
             color="grey"
             content="Cancel"
-            onClick={() => cancelActivity()}
           />
         </Button.Group>
       </Card.Content>
@@ -43,4 +54,4 @@ const ActivityDetails = () => {
   );
 };
 
-export default ActivityDetails;
+export default observer(ActivityDetails);

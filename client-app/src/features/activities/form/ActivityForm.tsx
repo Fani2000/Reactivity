@@ -1,20 +1,22 @@
 import { Button, Form, Segment } from "semantic-ui-react";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useState, useEffect } from "react";
 import { useStore } from "../../../app/stores/store";
 import { observer } from "mobx-react-lite";
+import { v4 as uuid } from "uuid";
+import { useParams, useNavigate } from "react-router-dom";
+import { Activity } from "../../../app/models/activity";
+import LoadingComponent from "../../../app/layout/LoadingComponent";
 
 const ActivityForm = () => {
   const { activityStore } = useStore();
 
-  const {
-    selectedActivity,
-    closeForm,
-    createActivity,
-    updateActivity,
-    loading,
-  } = activityStore;
+  // prettier-ignore
+  const { createActivity, updateActivity, loading, loadingInitial,loadActivity } = activityStore;
 
-  const initialState = selectedActivity ?? {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  const [activity, setActivity] = useState<Activity>({
     id: "",
     title: "",
     category: "",
@@ -22,14 +24,27 @@ const ActivityForm = () => {
     date: "",
     venue: "",
     city: "",
-  };
+  });
 
-  const [activity, setActivity] = useState(initialState);
+  useEffect(() => {
+    if (id) loadActivity(id).then((activity) => setActivity(activity!));
+  }, [id, loadActivity]);
 
   const handleSubmit = () => {
     console.log("FORM DATA: ", activity);
-    // createOrEdit(activity);
-    activity.id ? updateActivity(activity) : createActivity(activity);
+    // createOrEdit(activity)
+    if (!activity.id) {
+      activity.id = uuid();
+      createActivity(activity).then(() =>
+        navigate(`/activities/${activity.id}`)
+      );
+    } else {
+      updateActivity(activity).then(() =>
+        navigate(`/activities/${activity.id}`)
+      );
+    }
+
+    // activity.id ? updateActivity(activity) : createActivity(activity);
   };
 
   const handleInputChange = (
@@ -41,6 +56,8 @@ const ActivityForm = () => {
       [name]: value,
     });
   };
+
+  if (loadingInitial) return <LoadingComponent context="Loading..." />;
 
   return (
     <Segment clearing>
@@ -89,12 +106,7 @@ const ActivityForm = () => {
           type="submit"
           content="Submit"
         />
-        <Button
-          onClick={closeForm}
-          floated="right"
-          type="button"
-          content="Cancel"
-        />
+        <Button floated="right" type="button" content="Cancel" />
       </Form>
     </Segment>
   );

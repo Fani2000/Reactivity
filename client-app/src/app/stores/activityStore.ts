@@ -47,25 +47,30 @@ export default class ActivityStore {
     }
   };
 
+  loadActivity = async (id: string) => {
+    let activity = this.activities.filter((x) => x.id === id)[0];
+    if (activity) {
+      this.selectedActivity = activity;
+      return activity;
+    } else {
+      this.setInitialLoading(true);
+      try {
+        activity = await agent.Activities.details(id);
+        activity.date = activity.date.split("T")[0];
+        runInAction(() => {
+          this.selectedActivity = activity;
+        });
+        this.setInitialLoading(false);
+        return activity;
+      } catch (error) {
+        console.log(error);
+        this.setInitialLoading(false);
+      }
+    }
+  };
+
   setInitialLoading = (state: boolean) => {
     this.loadingInitial = state;
-  };
-
-  selectActivity = (id: string) => {
-    this.selectedActivity = this.activities.find((x) => x.id === id);
-  };
-
-  cancelSelectedActivity = () => {
-    this.selectedActivity = undefined;
-  };
-
-  openForm = (id?: string) => {
-    id ? this.selectActivity(id) : this.cancelSelectedActivity();
-    this.editMode = true;
-  };
-
-  closeForm = () => {
-    this.editMode = false;
   };
 
   createActivity = async (activity: Activity) => {
@@ -115,7 +120,6 @@ export default class ActivityStore {
       await agent.Activities.delete(id);
       runInAction(() => {
         this.activities = [...this.activities.filter((x) => x.id !== id)];
-        if (this.selectedActivity?.id === id) this.cancelSelectedActivity();
         this.loading = false;
       });
     } catch (error) {
