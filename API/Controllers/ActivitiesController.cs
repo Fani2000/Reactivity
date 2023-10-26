@@ -3,8 +3,6 @@ using Application.Activities;
 using Domain;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Persistence;
 
 namespace API;
 
@@ -17,23 +15,27 @@ public class ActivitiesController : BaseApiController
     [HttpGet]
     public async Task<ActionResult<List<Activity>>> GetActivities()
     {
-        return await Mediator.Send(new List.Query());
+        var results = await Mediator.Send(new List.Query());
+
+        return HandleResult(results);
     }
 
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<Activity>> GetActivity(Guid id)
+    public async Task<IActionResult> GetActivity(Guid id)
     {
-        return await Mediator.Send(new Details.Query { Id = id });
+        var result = await Mediator.Send(new Details.Query { Id = id });
+
+        return HandleResult(result);
     }
 
 
     [HttpPost]
     public async Task<ActionResult> CreateActivity(Activity activity)
     {
-        await Mediator.Send(new Create.Command { Activity = activity });
+        var result = await Mediator.Send(new Create.Command { Activity = activity });
 
-        return Ok();
+        return HandleResult(result);
     }
 
     [HttpPut("{id}")]

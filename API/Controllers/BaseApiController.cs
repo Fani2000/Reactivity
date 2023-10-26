@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Application.Core;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -16,5 +17,18 @@ namespace API.Controllers
             this.mediator = mediator;
         }
 
+
+        protected ActionResult HandleResult<T>(Result<T> result)
+        {
+            if (result.IsSuccess && result.value != null)
+            {
+                return Ok(result.value);
+            }
+
+            if (result.IsSuccess && result.value == null)
+                return NotFound();
+
+            return BadRequest(result.Error);
+        }
     }
 }
