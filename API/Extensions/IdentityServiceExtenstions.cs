@@ -19,6 +19,7 @@ namespace API.Extensions
             {
                 opt.Password.RequireNonAlphanumeric = false;
                 opt.Password.RequireDigit = false;
+                // opt.User.RequireUniqueEmail = true;
                 // opt.Password.RequiredLength = 6;
 
             }).AddEntityFrameworkStores<DataContext>();

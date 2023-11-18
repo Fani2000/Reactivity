@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API;
 
-[Authorize]
+// [Authorize]
 public class ActivitiesController : BaseApiController
 {
     public ActivitiesController(IMediator mediator) : base(mediator)
